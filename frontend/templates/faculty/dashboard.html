@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h3><i class="bi bi-mortarboard-fill"></i> ExamyNex</h3>
+            <small>Faculty Panel</small>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" data-menu="dashboard" class="active"><i class="bi bi-speedometer2"></i>
+                    Dashboard</a></li>
+            <li><a href="create-exam.html" data-menu="create"><i class="bi bi-plus-circle"></i> Create Exam</a></li>
+            <li><a href="students.html" data-menu="students"><i class="bi bi-people"></i> Students</a></li>
+            <li><a href="monitoring.html" data-menu="monitoring"><i class="bi bi-eye"></i> Live Monitoring</a></li>
+            <li><a href="analytics.html" data-menu="analytics"><i class="bi bi-graph-up"></i> Analytics</a></li>
+            <li><a href="profile.html" data-menu="profile"><i class="bi bi-person"></i> Profile</a></li>
+            <li><a href="../../templates/auth/login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Faculty Dashboard</h2>
+
+        <!-- Stats Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <p>Total Exams Created</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <p>Active Exams</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <p>Students Appeared</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <p>Average Pass %</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Exam-wise Average Marks</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="examMarksChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Pass vs Fail</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="passFailChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script>
+        Utils.setActiveMenu('dashboard');
+
+        let exams = [];
+        let submissions = [];
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Fetch exams and submissions
+                [exams, submissions] = await Promise.all([
+                    Utils.apiCall('/exams/', 'GET'),
+                    Utils.apiCall('/submit/', 'GET')
+                ]);
+
+                console.log('Exams:', exams);
+                console.log('Submissions:', submissions);
+
+                // Update stats
+                updateStats();
+
+                // Update charts
+                updateCharts();
+
+                // Add exam list table
+                addExamListTable();
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        function updateStats() {
+            const totalExams = exams.length;
+            const activeExams = exams.length; // All exams are active for now
+            const totalSubmissions = submissions.length;
+
+            // Calculate average pass percentage
+            const passThreshold = 50;
+            const passedCount = submissions.filter(s => s.score >= passThreshold).length;
+            const avgPassPercent = totalSubmissions > 0
+                ? ((passedCount / totalSubmissions) * 100).toFixed(1)
+                : 0;
+
+            // Update stat cards
+            const statCards = document.querySelectorAll('.stats-card');
+            statCards[0].innerHTML = `
+                <h3>${totalExams}</h3>
+                <p>Total Exams Created</p>
+            `;
+            statCards[1].innerHTML = `
+                <h3>${activeExams}</h3>
+                <p>Active Exams</p>
+            `;
+            statCards[2].innerHTML = `
+                <h3>${totalSubmissions}</h3>
+                <p>Students Appeared</p>
+            `;
+            statCards[3].innerHTML = `
+                <h3>${avgPassPercent}%</h3>
+                <p>Average Pass %</p>
+            `;
+        }
+
+        function updateCharts() {
+            // Calculate exam-wise average scores
+            const examScores = {};
+            submissions.forEach(sub => {
+                if (!examScores[sub.exam_id]) {
+                    examScores[sub.exam_id] = [];
+                }
+                examScores[sub.exam_id].push(sub.score);
+            });
+
+            const examLabels = [];
+            const examAvgScores = [];
+
+            Object.keys(examScores).forEach(examId => {
+                const exam = exams.find(e => e.id == examId);
+                if (exam) {
+                    examLabels.push(exam.title);
+                    const avg = examScores[examId].reduce((a, b) => a + b, 0) / examScores[examId].length;
+                    examAvgScores.push(avg.toFixed(1));
+                }
+            });
+
+            // Exam Marks Chart
+            const examMarksCtx = document.getElementById('examMarksChart').getContext('2d');
+            new Chart(examMarksCtx, {
+                type: 'bar',
+                data: {
+                    labels: examLabels.length > 0 ? examLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Average Score (%)',
+                        data: examAvgScores.length > 0 ? examAvgScores : [0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Pass vs Fail Chart
+            const passThreshold = 50;
+            const passedCount = submissions.filter(s => s.score >= passThreshold).length;
+            const failedCount = submissions.length - passedCount;
+
+            const passFailCtx = document.getElementById('passFailChart').getContext('2d');
+            new Chart(passFailCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Passed', 'Failed'],
+                    datasets: [{
+                        data: [passedCount, failedCount],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(239, 68, 68, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(16, 185, 129)',
+                            'rgb(239, 68, 68)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function addExamListTable() {
+            // Add exam list section
+            const examListSection = document.createElement('div');
+            examListSection.className = 'card mt-4';
+            examListSection.innerHTML = `
+                <div class="card-header">
+                    <h5 class="mb-0">My Exams</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Duration</th>
+                                    <th>Submissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="examTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            document.querySelector('.main-content').appendChild(examListSection);
+
+            // Populate exam table
+            const tbody = document.getElementById('examTableBody');
+
+            if (exams.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            No exams created yet. <a href="create-exam.html">Create your first exam</a>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                exams.forEach(exam => {
+                    const submissionCount = submissions.filter(s => s.exam_id === exam.id).length;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${exam.title}</strong></td>
+                        <td>${exam.description || 'N/A'}</td>
+                        <td>${exam.duration} min</td>
+                        <td><span class="badge bg-info">${submissionCount} submissions</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="viewExamDetails(${exam.id})">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteExam(${exam.id})">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        function viewExamDetails(examId) {
+            // Navigate to analytics page with exam filter
+            window.location.href = `analytics.html?exam_id=${examId}`;
+        }
+
+        async function deleteExam(examId) {
+            if (!confirm('Are you sure you want to delete this exam?')) return;
+
+            try {
+                await Utils.apiCall(`/exams/${examId}`, 'DELETE');
+                Utils.showAlert('Exam deleted successfully', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                Utils.showAlert('Failed to delete exam: ' + error.message, 'danger');
+            }
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+    </script>
+</body>
+
+</html>

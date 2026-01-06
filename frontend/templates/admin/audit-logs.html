@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h3><i class="bi bi-mortarboard-fill"></i> ExamyNex</h3>
+            <small>Admin Panel</small>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" data-menu="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a href="faculty-approvals.html" data-menu="approvals"><i class="bi bi-person-check"></i> Faculty Approvals</a></li>
+            <li><a href="students.html" data-menu="students"><i class="bi bi-people"></i> Students</a></li>
+            <li><a href="faculty.html" data-menu="faculty"><i class="bi bi-mortarboard"></i> Faculty</a></li>
+            <li><a href="exams.html" data-menu="exams"><i class="bi bi-file-earmark-text"></i> Exams</a></li>
+            <li><a href="audit-logs.html" data-menu="audit" class="active"><i class="bi bi-journal-text"></i> Audit Logs</a></li>
+            <li><a href="profile.html" data-menu="profile"><i class="bi bi-person"></i> Profile</a></li>
+            <li><a href="../../templates/auth/login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2 class="mb-4"><i class="bi bi-journal-text"></i> Audit Logs</h2>
+        
+        <!-- Filters -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Date From</label>
+                        <input type="date" class="form-control" id="dateFrom">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date To</label>
+                        <input type="date" class="form-control" id="dateTo">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" onclick="filterLogs()">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">System Audit Logs</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script>
+        Utils.setActiveMenu('audit');
+        
+        function filterLogs() {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            // Filter logic here
+            Utils.showAlert('Logs filtered', 'info', 'alertContainer');
+        }
+    </script>
+</body>
+</html>
+

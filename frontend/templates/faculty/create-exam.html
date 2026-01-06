@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Exam - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h3><i class="bi bi-mortarboard-fill"></i> ExamyNex</h3>
+            <small>Faculty Panel</small>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" data-menu="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a href="create-exam.html" data-menu="create" class="active"><i class="bi bi-plus-circle"></i> Create Exam</a></li>
+            <li><a href="students.html" data-menu="students"><i class="bi bi-people"></i> Students</a></li>
+            <li><a href="monitoring.html" data-menu="monitoring"><i class="bi bi-eye"></i> Live Monitoring</a></li>
+            <li><a href="analytics.html" data-menu="analytics"><i class="bi bi-graph-up"></i> Analytics</a></li>
+            <li><a href="profile.html" data-menu="profile"><i class="bi bi-person"></i> Profile</a></li>
+            <li><a href="../../templates/auth/login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2 class="mb-4"><i class="bi bi-plus-circle"></i> Create Exam</h2>
+        
+        <div id="alertContainer"></div>
+        
+        <!-- Step 1: Basic Exam Details -->
+        <div class="card mb-3" id="step1">
+            <div class="card-header">
+                <h5 class="mb-0">Step 1: Exam Details</h5>
+            </div>
+            <div class="card-body">
+                <form id="examBasicForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Exam Title</label>
+                            <input type="text" class="form-control" id="examTitle" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="examSubject" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Branch</label>
+                            <select class="form-select" id="examBranch" required>
+                                <option value="">Select Branch</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Semester</label>
+                            <select class="form-select" id="examSemester" required>
+                                <option value="">Select Semester</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Duration (minutes)</label>
+                            <input type="number" class="form-control" id="examDuration" min="1" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Total Marks</label>
+                        <input type="number" class="form-control" id="totalMarks" min="1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Choose Mode</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="examMode" id="aiMode" value="ai" required>
+                                <label class="form-check-label" for="aiMode">AI-Generated Exam</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="examMode" id="manualMode" value="manual" required>
+                                <label class="form-check-label" for="manualMode">Manual Exam</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" onclick="proceedToStep2()">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Step 2: AI-Generated Exam -->
+        <div class="card mb-3" id="step2AI" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">Step 2: AI-Generated Exam</h5>
+            </div>
+            <div class="card-body">
+                <form id="aiExamForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Number of Questions</label>
+                            <input type="number" class="form-control" id="numQuestions" min="1" max="50" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Difficulty Level</label>
+                            <select class="form-select" id="difficultyLevel" required>
+                                <option value="">Select Difficulty</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" onclick="generateAIQuestions()">
+                        <i class="bi bi-robot"></i> Generate Questions
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="goBackToStep1()">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                    
+                    <div id="aiLoading" style="display: none;" class="mt-3">
+                        <div class="text-center">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-2">Generating questions with AI...</p>
+                        </div>
+                    </div>
+                    
+                    <div id="aiPreview" style="display: none;" class="mt-3">
+                        <h6>Generated Questions Preview:</h6>
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="text-muted">Questions will appear here after generation...</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success mt-3" onclick="createAIExam()">
+                            <i class="bi bi-check-circle"></i> Create Exam
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Step 2: Manual Exam -->
+        <div class="card mb-3" id="step2Manual" style="display: none;">
+            <div class="card-header">
+                <h5 class="mb-0">Step 2: Manual Exam - Add Questions</h5>
+            </div>
+            <div class="card-body">
+                <div id="questionsContainer">
+                    <!-- Questions will be added here dynamically -->
+                </div>
+                
+                <button type="button" class="btn btn-primary mb-3" onclick="addQuestion()">
+                    <i class="bi bi-plus-circle"></i> Add Question
+                </button>
+                
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success" onclick="createManualExam()">
+                        <i class="bi bi-check-circle"></i> Create Exam
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="goBackToStep1()">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script>
+        Utils.setActiveMenu('create');
+        
+        let questionCount = 0;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            Utils.generateBranchDropdown('examBranch');
+            Utils.generateSemesterDropdown('examSemester');
+        });
+        
+        function proceedToStep2() {
+            if (!Utils.validateForm('examBasicForm')) {
+                Utils.showAlert('Please fill in all required fields', 'danger', 'alertContainer');
+                return;
+            }
+            
+            const mode = document.querySelector('input[name="examMode"]:checked').value;
+            
+            if (mode === 'ai') {
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2AI').style.display = 'block';
+            } else {
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2Manual').style.display = 'block';
+            }
+        }
+        
+        function goBackToStep1() {
+            document.getElementById('step2AI').style.display = 'none';
+            document.getElementById('step2Manual').style.display = 'none';
+            document.getElementById('step1').style.display = 'block';
+        }
+        
+        function generateAIQuestions() {
+            if (!Utils.validateForm('aiExamForm')) {
+                Utils.showAlert('Please fill in all required fields', 'danger', 'alertContainer');
+                return;
+            }
+            
+            document.getElementById('aiLoading').style.display = 'block';
+            
+            // Simulate AI generation
+            setTimeout(() => {
+                document.getElementById('aiLoading').style.display = 'none';
+                document.getElementById('aiPreview').style.display = 'block';
+                document.getElementById('aiPreview').querySelector('.card-body').innerHTML = 
+                    '<p>AI has generated questions based on your criteria. Questions are ready for review.</p>';
+            }, 2000);
+        }
+        
+        async function createAIExam() {
+            try {
+                const title = document.getElementById('examTitle').value;
+                const description = `AI-Generated Exam - ${document.getElementById('examSubject').value}`;
+                const duration = parseInt(document.getElementById('examDuration').value) || 60;
+                
+                // Create exam in backend
+                const examData = {
+                    title: title,
+                    description: description,
+                    duration: duration
+                };
+                
+                const response = await Utils.apiCall('/exams/', 'POST', examData);
+                
+                if (response && response.id) {
+                    Utils.showAlert('AI-Generated Exam created successfully!', 'success', 'alertContainer');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    Utils.showAlert('Failed to create exam. Please try again.', 'danger', 'alertContainer');
+                }
+            } catch (error) {
+                console.error('Error creating exam:', error);
+                Utils.showAlert(error.message || 'Failed to create exam. Please try again.', 'danger', 'alertContainer');
+            }
+        }
+        
+        function addQuestion() {
+            questionCount++;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'card mb-3';
+            questionDiv.id = `question-${questionCount}`;
+            questionDiv.innerHTML = `
+                <div class="card-header d-flex justify-content-between">
+                    <strong>Question ${questionCount}</strong>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeQuestion(${questionCount})">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Question Text</label>
+                        <textarea class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Option A</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Option B</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Option C</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Option D</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Correct Option</label>
+                            <select class="form-select" required>
+                                <option value="">Select</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Marks per Question</label>
+                            <input type="number" class="form-control" min="1" value="1" required>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('questionsContainer').appendChild(questionDiv);
+        }
+        
+        function removeQuestion(id) {
+            document.getElementById(`question-${id}`).remove();
+        }
+        
+        async function createManualExam() {
+            const questions = document.querySelectorAll('#questionsContainer .card');
+            if (questions.length === 0) {
+                Utils.showAlert('Please add at least one question', 'danger', 'alertContainer');
+                return;
+            }
+            
+            try {
+                const title = document.getElementById('examTitle').value;
+                const description = `Manual Exam - ${document.getElementById('examSubject').value}`;
+                const duration = parseInt(document.getElementById('examDuration').value) || 60;
+                
+                // Create exam in backend
+                const examData = {
+                    title: title,
+                    description: description,
+                    duration: duration
+                };
+                
+                const examResponse = await Utils.apiCall('/exams/', 'POST', examData);
+                
+                if (examResponse && examResponse.id) {
+                    const examId = examResponse.id;
+                    
+                    // Add questions to the exam
+                    let questionPromises = [];
+                    questions.forEach((questionCard, index) => {
+                        const questionText = questionCard.querySelector('textarea').value;
+                        const options = questionCard.querySelectorAll('input[type="text"]');
+                        const correctOption = questionCard.querySelector('select').value;
+                        
+                        // Format question text with options
+                        let fullQuestionText = questionText + '\n';
+                        options.forEach((opt, idx) => {
+                            const optionLabel = String.fromCharCode(65 + idx); // A, B, C, D
+                            fullQuestionText += `${optionLabel}. ${opt.value}\n`;
+                        });
+                        
+                        const questionData = {
+                            text: fullQuestionText,
+                            exam_id: examId,
+                            correct_answer: correctOption,
+                            is_mcq: true
+                        };
+                        
+                        questionPromises.push(Utils.apiCall('/questions/', 'POST', questionData));
+                    });
+                    
+                    // Wait for all questions to be added
+                    await Promise.all(questionPromises);
+                    
+                    Utils.showAlert('Manual Exam created successfully!', 'success', 'alertContainer');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    Utils.showAlert('Failed to create exam. Please try again.', 'danger', 'alertContainer');
+                }
+            } catch (error) {
+                console.error('Error creating exam:', error);
+                Utils.showAlert(error.message || 'Failed to create exam. Please try again.', 'danger', 'alertContainer');
+            }
+        }
+    </script>
+</body>
+</html>
+

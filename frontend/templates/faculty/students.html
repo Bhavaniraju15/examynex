@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h3><i class="bi bi-mortarboard-fill"></i> ExamyNex</h3>
+            <small>Faculty Panel</small>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" data-menu="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a href="create-exam.html" data-menu="create"><i class="bi bi-plus-circle"></i> Create Exam</a></li>
+            <li><a href="students.html" data-menu="students" class="active"><i class="bi bi-people"></i> Students</a>
+            </li>
+            <li><a href="monitoring.html" data-menu="monitoring"><i class="bi bi-eye"></i> Live Monitoring</a></li>
+            <li><a href="analytics.html" data-menu="analytics"><i class="bi bi-graph-up"></i> Analytics</a></li>
+            <li><a href="profile.html" data-menu="profile"><i class="bi bi-person"></i> Profile</a></li>
+            <li><a href="../../templates/auth/login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2 class="mb-4"><i class="bi bi-people"></i> Student Management</h2>
+
+        <div id="alertContainer"></div>
+
+        <!-- Filters -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Branch</label>
+                        <select class="form-select" id="filterBranch">
+                            <option value="">All Branches</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Semester</label>
+                        <select class="form-select" id="filterSemester">
+                            <option value="">All Semesters</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" onclick="filterStudents()">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Students List</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Roll Number</th>
+                                <th>Branch</th>
+                                <th>Semester</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script>
+        Utils.setActiveMenu('students');
+
+        let allStudents = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            Utils.generateBranchDropdown('filterBranch', true);
+            Utils.generateSemesterDropdown('filterSemester', true);
+            loadStudents();
+        });
+
+        async function loadStudents() {
+            try {
+                // Fetch all users with role=student
+                const students = await Utils.apiCall('/users/?role=student', 'GET', null, false);
+                allStudents = students;
+                displayStudents(students);
+            } catch (error) {
+                console.error('Error loading students:', error);
+                Utils.showAlert('Failed to load students. ' + error.message, 'danger', 'alertContainer');
+            }
+        }
+
+        function displayStudents(students) {
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) {
+                // Create tbody if it doesn't exist
+                const table = document.querySelector('table');
+                const newTbody = document.createElement('tbody');
+                table.appendChild(newTbody);
+            }
+
+            const tableBody = document.querySelector('table tbody');
+            tableBody.innerHTML = '';
+
+            if (students.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                            <p class="mt-2">No students found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            students.forEach((student, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.email.split('@')[0]}</td>
+                    <td>STU${String(student.id).padStart(4, '0')}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewProfile(${student.id})">
+                            <i class="bi bi-person"></i> Profile
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="viewPerformance(${student.id})">
+                            <i class="bi bi-graph-up"></i> Performance
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filterStudents() {
+            const branch = document.getElementById('filterBranch').value;
+            const semester = document.getElementById('filterSemester').value;
+
+            // For now, just show all students since we don't have branch/semester data
+            // In a real app, you'd filter based on these values
+            displayStudents(allStudents);
+            Utils.showAlert('Filter applied', 'info', 'alertContainer');
+        }
+
+        function viewProfile(id) {
+            window.location.href = `student-profile.html?id=${id}`;
+        }
+
+        function viewPerformance(id) {
+            window.location.href = `student-performance.html?id=${id}`;
+        }
+
+        function deleteStudent(id) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                Utils.showAlert('Student deleted successfully', 'success', 'alertContainer');
+                // In a real app, you'd call the API to delete the student
+                loadStudents();
+            }
+        }
+    </script>
+</body>
+
+</html>

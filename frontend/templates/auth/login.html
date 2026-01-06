@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <h2><i class="bi bi-box-arrow-in-right"></i> Login to ExamyNex</h2>
+            
+            <div id="alertContainer"></div>
+            
+            <form id="loginForm">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="username" placeholder="Email / Username" required>
+                    <label for="username"><i class="bi bi-person"></i> Email / Username</label>
+                </div>
+                
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" id="password" placeholder="Password" required>
+                    <label for="password"><i class="bi bi-lock"></i> Password</label>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <p class="text-muted">Don't have an account? <a href="register.html">Register here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script>
+        // Helper function to decode JWT token (without verification - just to read payload)
+        function decodeJWT(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (error) {
+                console.error('Error decoding JWT:', error);
+                return null;
+            }
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                Utils.showAlert('Please fill in all fields', 'danger', 'alertContainer');
+                return;
+            }
+            
+            try {
+                // Call backend login API
+                const response = await Utils.apiCall('/users/login', 'POST', { 
+                    email: email, 
+                    password: password 
+                }, false); // Don't require auth for login
+                
+                if (response && response.access_token) {
+                    // Store token
+                    Utils.setAuthToken(response.access_token);
+                    localStorage.setItem('username', email);
+                    
+                    // Decode JWT token to get the actual user role
+                    const payload = decodeJWT(response.access_token);
+                    
+                    if (payload && payload.role) {
+                        const role = payload.role;
+                        localStorage.setItem('userRole', role);
+                        
+                        // Also store user_id if available
+                        if (payload.user_id) {
+                            localStorage.setItem('userId', payload.user_id);
+                        }
+                        
+                        Utils.showAlert(`Login successful as ${role}! Redirecting...`, 'success', 'alertContainer');
+                        setTimeout(() => {
+                            Utils.redirectByRole(role);
+                        }, 1000);
+                    } else {
+                        Utils.showAlert('Login failed. Could not determine user role.', 'danger', 'alertContainer');
+                    }
+                } else {
+                    Utils.showAlert('Login failed. Invalid response from server.', 'danger', 'alertContainer');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                Utils.showAlert(error.message || 'Login failed. Please check your credentials.', 'danger', 'alertContainer');
+            }
+        });
+    </script>
+</body>
+</html>
+

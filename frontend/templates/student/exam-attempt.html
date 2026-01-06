@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+</head>
+
+<body>
+    <!-- Timer Display -->
+    <div class="timer-display" id="timerDisplay">
+        <i class="bi bi-clock"></i> <span id="timer">90:00</span>
+    </div>
+
+    <!-- Violations Alert Container -->
+    <div id="examAlertContainer"
+        style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 2000; width: 90%; max-width: 600px;">
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" style="margin-left: 0; padding-top: 100px;">
+        <div class="container">
+            <div class="exam-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3>Mathematics Final Exam</h3>
+                    <div>
+                        <span class="badge badge-warning">Violations: <span id="violationsCount">0</span></span>
+                    </div>
+                </div>
+
+                <!-- Question Panel -->
+                <div class="question-panel">
+                    <h5>Question 1 of 25</h5>
+                    <p class="mb-3">What is the derivative of x²?</p>
+
+                    <div class="option-item" onclick="selectOption(this, 'A')">
+                        <input type="radio" name="q1" value="A" id="q1a">
+                        <label for="q1a" class="ms-2">A) 2x</label>
+                    </div>
+                    <div class="option-item" onclick="selectOption(this, 'B')">
+                        <input type="radio" name="q1" value="B" id="q1b">
+                        <label for="q1b" class="ms-2">B) x²</label>
+                    </div>
+                    <div class="option-item" onclick="selectOption(this, 'C')">
+                        <input type="radio" name="q1" value="C" id="q1c">
+                        <label for="q1c" class="ms-2">C) 2</label>
+                    </div>
+                    <div class="option-item" onclick="selectOption(this, 'D')">
+                        <input type="radio" name="q1" value="D" id="q1d">
+                        <label for="q1d" class="ms-2">D) x</label>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button class="btn btn-secondary" onclick="previousQuestion()">
+                        <i class="bi bi-arrow-left"></i> Previous
+                    </button>
+                    <div>
+                        <button class="btn btn-info" onclick="markForReview()">
+                            <i class="bi bi-bookmark"></i> Mark for Review
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="nextQuestion()">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Question Navigation -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h6>Question Navigation</h6>
+                        <div class="d-flex flex-wrap gap-2" id="questionNav">
+                            <!-- Question numbers will be generated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-danger btn-lg" id="submitExamBtn" onclick="submitExam()">
+                        <i class="bi bi-check-circle"></i> Submit Exam
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script src="../../static/js/exam-security.js"></script>
+    <script>
+        console.log('=== EXAM PAGE LOADED ===');
+        console.log('ExamSecurity exists:', typeof ExamSecurity !== 'undefined');
+
+        // Get exam ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const examId = urlParams.get('exam_id') || 1; // Default to 1 for testing
+        console.log('Exam ID:', examId);
+        console.log('Starting proctoring initialization...');
+
+        // Initialize exam security with AI proctoring
+        ExamSecurity.init(examId).then(() => {
+            console.log('Exam security and proctoring initialized');
+        }).catch(error => {
+            console.error('Failed to initialize exam security:', error);
+        });
+
+        // Timer
+        let totalSeconds = 90 * 60; // 90 minutes
+        const timerElement = document.getElementById('timer');
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function updateTimer() {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // Change color based on time remaining
+            if (totalSeconds <= 300) { // 5 minutes
+                timerDisplay.classList.add('timer-danger');
+            } else if (totalSeconds <= 900) { // 15 minutes
+                timerDisplay.classList.add('timer-warning');
+            }
+
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                ExamSecurity.autoSubmit('Time expired');
+            } else {
+                totalSeconds--;
+            }
+        }
+
+        const timerInterval = setInterval(updateTimer, 1000);
+
+        // Question navigation
+        let currentQuestion = 1;
+        const totalQuestions = 25;
+
+        // Answer tracking - stores {questionId: answerText}
+        const studentAnswers = {};
+
+        function generateQuestionNav() {
+            const navContainer = document.getElementById('questionNav');
+            for (let i = 1; i <= totalQuestions; i++) {
+                const btn = document.createElement('button');
+                btn.id = `qNav${i}`;
+                btn.className = 'btn btn-sm btn-outline-primary';
+                btn.textContent = i;
+                btn.onclick = () => goToQuestion(i);
+                navContainer.appendChild(btn);
+            }
+            updateQuestionNav();
+        }
+
+        function updateQuestionNav() {
+            // Update active state
+            for (let i = 1; i <= totalQuestions; i++) {
+                const btn = document.getElementById(`qNav${i}`);
+                if (btn) {
+                    btn.className = (i === currentQuestion) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-primary';
+                }
+            }
+            // Update question display
+            document.querySelector('.question-panel h5').textContent = `Question ${currentQuestion} of ${totalQuestions}`;
+
+            // Update question text and options (demo data)
+            const demoQuestions = [
+                { q: "What is the derivative of x²?", opts: ["2x", "x²", "2", "x"] },
+                { q: "What is the integral of 2x?", opts: ["x²", "2x²", "x² + C", "2"] },
+                { q: "What is the value of π (pi)?", opts: ["3.14159", "3.14", "22/7", "All of the above"] },
+                { q: "What is 2 + 2?", opts: ["4", "22", "5", "3"] },
+                { q: "What is the capital of France?", opts: ["Paris", "London", "Berlin", "Madrid"] }
+            ];
+
+            const questionData = demoQuestions[(currentQuestion - 1) % demoQuestions.length];
+            document.querySelector('.question-panel p').textContent = questionData.q;
+
+            // Update options
+            const options = document.querySelectorAll('.option-item');
+            const labels = ['A', 'B', 'C', 'D'];
+            options.forEach((opt, idx) => {
+                if (idx < questionData.opts.length) {
+                    const label = opt.querySelector('label');
+                    if (label) {
+                        label.textContent = `${labels[idx]}) ${questionData.opts[idx]}`;
+                    }
+                    opt.classList.remove('selected');
+                    const radio = opt.querySelector('input[type="radio"]');
+                    if (radio) radio.checked = false;
+                }
+            });
+        }
+
+        function goToQuestion(num) {
+            if (num >= 1 && num <= totalQuestions) {
+                currentQuestion = num;
+                updateQuestionNav();
+            }
+        }
+
+        function selectOption(element, value) {
+            // Remove selected class from all options
+            element.parentElement.querySelectorAll('.option-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Add selected class to clicked option
+            element.classList.add('selected');
+
+            // Check radio button
+            const radio = element.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+
+            // Save answer
+            studentAnswers[currentQuestion] = value;
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 1) {
+                currentQuestion--;
+                updateQuestionNav();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                updateQuestionNav();
+            }
+        }
+
+        function markForReview() {
+            const btn = document.getElementById(`qNav${currentQuestion}`);
+            if (btn) btn.className = 'btn btn-sm btn-warning';
+        }
+
+        async function submitExam() {
+            if (!confirm('Are you sure you want to submit the exam? This action cannot be undone.')) {
+                return;
+            }
+
+            // Prepare submission data
+            const answers = [];
+            for (const [questionId, answerText] of Object.entries(studentAnswers)) {
+                answers.push({
+                    question_id: parseInt(questionId),
+                    answer_text: answerText
+                });
+            }
+
+            try {
+                // Submit to backend
+                const response = await Utils.apiCall('/submit/', 'POST', {
+                    exam_id: examId,
+                    answers: answers
+                });
+
+                console.log('Submission response:', response);
+
+                // Cleanup
+                ExamSecurity.cleanup();
+                clearInterval(timerInterval);
+
+                // Redirect to results with submission_id
+                window.location.href = `results.html?submission_id=${response.submission_id}`;
+
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('Failed to submit exam: ' + error.message);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            generateQuestionNav();
+        });
+    </script>
+</body>
+
+</html>

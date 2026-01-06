@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card" style="max-width: 600px;">
+            <h2><i class="bi bi-person-plus"></i> Register to ExamyNex</h2>
+            
+            <div id="alertContainer"></div>
+            
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-4" id="registerTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="student-tab" data-bs-toggle="tab" data-bs-target="#student" type="button">
+                        <i class="bi bi-person"></i> Student Registration
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="faculty-tab" data-bs-toggle="tab" data-bs-target="#faculty" type="button">
+                        <i class="bi bi-mortarboard"></i> Faculty Registration
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="registerTabContent">
+                <!-- Student Registration -->
+                <div class="tab-pane fade show active" id="student" role="tabpanel">
+                    <form id="studentForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="studentName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="studentName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="rollNumber" class="form-label">Roll Number</label>
+                                <input type="text" class="form-control" id="rollNumber" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="studentEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="studentEmail" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="studentPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="studentPassword" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="studentBranch" class="form-label">Branch</label>
+                                <select class="form-select" id="studentBranch" required>
+                                    <option value="">Select Branch</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="studentSemester" class="form-label">Semester</label>
+                                <select class="form-select" id="studentSemester" required>
+                                    <option value="">Select Semester</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Register as Student
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Faculty Registration -->
+                <div class="tab-pane fade" id="faculty" role="tabpanel">
+                    <form id="facultyForm">
+                        <div class="mb-3">
+                            <label for="facultyName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="facultyName" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="facultyEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="facultyEmail" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="facultyPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="facultyPassword" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="facultyDepartment" class="form-label">Department</label>
+                            <select class="form-select" id="facultyDepartment" required>
+                                <option value="">Select Department</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subjectsHandled" class="form-label">Subjects Handled (comma-separated)</label>
+                            <input type="text" class="form-control" id="subjectsHandled" placeholder="e.g., Mathematics, Physics, Chemistry" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Register as Faculty
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <p class="text-muted">Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script>
+        // Initialize dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            Utils.generateBranchDropdown('studentBranch');
+            Utils.generateSemesterDropdown('studentSemester');
+            Utils.generateBranchDropdown('facultyDepartment');
+        });
+        
+        // Student Registration
+        document.getElementById('studentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!Utils.validateForm('studentForm')) {
+                Utils.showAlert('Please fill in all required fields', 'danger', 'alertContainer');
+                return;
+            }
+            
+            const email = document.getElementById('studentEmail').value;
+            const password = document.getElementById('studentPassword').value;
+            
+            // Backend expects: email, password, role
+            const data = {
+                email: email,
+                password: password,
+                role: 'student'
+            };
+            
+            // Note: Additional fields (name, rollNumber, branch, semester) would need backend schema extension
+            // For now, we're sending the basic required fields
+            
+            try {
+                const response = await Utils.apiCall('/users/register', 'POST', data, false);
+                
+                if (response && response.message) {
+                    Utils.showAlert('Registration successful! You can now login.', 'success', 'alertContainer');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    Utils.showAlert('Registration failed. Please try again.', 'danger', 'alertContainer');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                Utils.showAlert(error.message || 'Registration failed. Please try again.', 'danger', 'alertContainer');
+            }
+        });
+        
+        // Faculty Registration
+        document.getElementById('facultyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!Utils.validateForm('facultyForm')) {
+                Utils.showAlert('Please fill in all required fields', 'danger', 'alertContainer');
+                return;
+            }
+            
+            const email = document.getElementById('facultyEmail').value;
+            const password = document.getElementById('facultyPassword').value;
+            
+            // Backend expects: email, password, role
+            const data = {
+                email: email,
+                password: password,
+                role: 'faculty'
+            };
+            
+            // Note: Additional fields (name, department, subjects) would need backend schema extension
+            // For now, we're sending the basic required fields
+            
+            try {
+                const response = await Utils.apiCall('/users/register', 'POST', data, false);
+                
+                if (response && response.message) {
+                    Utils.showAlert('Registration submitted! Waiting for Admin Approval.', 'warning', 'alertContainer');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    Utils.showAlert('Registration failed. Please try again.', 'danger', 'alertContainer');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                Utils.showAlert(error.message || 'Registration failed. Please try again.', 'danger', 'alertContainer');
+            }
+        });
+    </script>
+</body>
+</html>
+

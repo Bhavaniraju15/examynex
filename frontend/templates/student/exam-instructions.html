@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Instructions - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../../static/css/main.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h3><i class="bi bi-mortarboard-fill"></i> ExamyNex</h3>
+            <small>Student Panel</small>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html" data-menu="dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+            <li><a href="exams.html" data-menu="exams"><i class="bi bi-file-earmark-text"></i> My Exams</a></li>
+            <li><a href="results.html" data-menu="results"><i class="bi bi-clipboard-check"></i> Results</a></li>
+            <li><a href="../../templates/auth/login.html"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2 class="mb-4"><i class="bi bi-info-circle"></i> Exam Instructions</h2>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Mathematics Final Exam</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="mb-3">Important Rules:</h6>
+                <ul class="list-group mb-4">
+                    <li class="list-group-item">
+                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                        <strong>One attempt only:</strong> You can attempt this exam only once.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                        <strong>Tab switch rules:</strong> Switching tabs will be detected and counted as a violation.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                        <strong>Auto-submit conditions:</strong> After 3 violations, the exam will be auto-submitted.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                        <strong>Time limit:</strong> The exam will auto-submit when time expires.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                        <strong>No copy/paste:</strong> Copy and paste functions are disabled during the exam.
+                    </li>
+                    <li class="list-group-item">
+                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                        <strong>No right-click:</strong> Right-click is disabled during the exam.
+                    </li>
+                </ul>
+                
+                <div class="alert alert-info">
+                    <h6><i class="bi bi-info-circle"></i> Exam Details:</h6>
+                    <p class="mb-1"><strong>Duration:</strong> 90 minutes</p>
+                    <p class="mb-1"><strong>Total Marks:</strong> 100</p>
+                    <p class="mb-1"><strong>Total Questions:</strong> 25</p>
+                    <p class="mb-0"><strong>Type:</strong> Multiple Choice Questions (MCQ)</p>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button class="btn btn-primary btn-lg" onclick="startExam()">
+                        <i class="bi bi-play-circle"></i> Start Exam
+                    </button>
+                    <a href="exams.html" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Exams
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../static/js/utils.js"></script>
+    <script>
+        function startExam() {
+            if (confirm('Are you ready to start the exam? Once started, you cannot go back.')) {
+                window.location.href = 'exam-attempt.html?id=1';
+            }
+        }
+    </script>
+</body>
+</html>
+

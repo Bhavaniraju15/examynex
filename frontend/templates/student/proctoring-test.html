@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proctoring Test - ExamyNex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-box {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .status-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h2><i class="bi bi-camera-video"></i> AI Proctoring Test Page</h2>
+        <p class="text-muted">This page tests if the AI proctoring features are working correctly.</p>
+
+        <hr>
+
+        <div id="statusContainer">
+            <div class="status-box status-info">
+                <strong>Status:</strong> Initializing...
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h5>Test Steps:</h5>
+            <ol id="testSteps">
+                <li>Loading exam-security.js... <span id="step1" class="text-muted">⏳</span></li>
+                <li>Requesting camera permission... <span id="step2" class="text-muted">⏳</span></li>
+                <li>Starting proctoring session... <span id="step3" class="text-muted">⏳</span></li>
+                <li>Camera preview visible... <span id="step4" class="text-muted">⏳</span></li>
+                <li>Frame capture active... <span id="step5" class="text-muted">⏳</span></li>
+            </ol>
+        </div>
+
+        <div class="mt-4">
+            <button class="btn btn-primary" onclick="startTest()">
+                <i class="bi bi-play-fill"></i> Start Proctoring Test
+            </button>
+            <button class="btn btn-danger" onclick="stopTest()">
+                <i class="bi bi-stop-fill"></i> Stop Test
+            </button>
+        </div>
+
+        <div class="mt-4">
+            <h5>Console Log:</h5>
+            <div id="consoleLog"
+                style="background: #000; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; max-height: 300px; overflow-y: auto;">
+                Waiting for test to start...
+            </div>
+        </div>
+    </div>
+
+    <script src="../../static/js/utils.js"></script>
+    <script src="../../static/js/exam-security.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const consoleLog = document.getElementById('consoleLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f00' : type === 'success' ? '#0f0' : '#fff';
+            consoleLog.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            consoleLog.scrollTop = consoleLog.scrollHeight;
+        }
+
+        function updateStep(stepNum, status) {
+            const step = document.getElementById(`step${stepNum}`);
+            if (status === 'success') {
+                step.innerHTML = '✅';
+                step.className = 'text-success';
+            } else if (status === 'error') {
+                step.innerHTML = '❌';
+                step.className = 'text-danger';
+            } else {
+                step.innerHTML = '⏳';
+                step.className = 'text-warning';
+            }
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusContainer = document.getElementById('statusContainer');
+            const className = type === 'success' ? 'status-success' : type === 'error' ? 'status-error' : 'status-info';
+            statusContainer.innerHTML = `
+                <div class="status-box ${className}">
+                    <strong>Status:</strong> ${message}
+                </div>
+            `;
+        }
+
+        async function startTest() {
+            log('=== Starting Proctoring Test ===', 'info');
+
+            // Step 1: Check if ExamSecurity exists
+            updateStep(1, 'loading');
+            if (typeof ExamSecurity !== 'undefined') {
+                log('✓ ExamSecurity object loaded successfully', 'success');
+                updateStep(1, 'success');
+            } else {
+                log('✗ ExamSecurity object not found! File may not be loaded.', 'error');
+                updateStep(1, 'error');
+                updateStatus('Failed: exam-security.js not loaded', 'error');
+                return;
+            }
+
+            // Step 2: Initialize proctoring
+            updateStep(2, 'loading');
+            updateStatus('Requesting camera permission...', 'info');
+            log('Requesting camera permission...', 'info');
+
+            try {
+                await ExamSecurity.init(1); // Test with exam ID 1
+
+                updateStep(2, 'success');
+                log('✓ Camera permission granted', 'success');
+
+                // Step 3: Check session
+                updateStep(3, 'loading');
+                if (ExamSecurity.proctorSessionId) {
+                    log(`✓ Proctoring session started: ${ExamSecurity.proctorSessionId}`, 'success');
+                    updateStep(3, 'success');
+                } else {
+                    log('⚠ Session ID not set yet, waiting...', 'info');
+                    setTimeout(() => {
+                        if (ExamSecurity.proctorSessionId) {
+                            log(`✓ Proctoring session started: ${ExamSecurity.proctorSessionId}`, 'success');
+                            updateStep(3, 'success');
+                        } else {
+                            log('✗ Session ID still not set', 'error');
+                            updateStep(3, 'error');
+                        }
+                    }, 3000);
+                }
+
+                // Step 4: Check camera preview
+                updateStep(4, 'loading');
+                setTimeout(() => {
+                    const preview = document.getElementById('cameraPreview');
+                    if (preview) {
+                        log('✓ Camera preview is visible', 'success');
+                        updateStep(4, 'success');
+                    } else {
+                        log('✗ Camera preview not found', 'error');
+                        updateStep(4, 'error');
+                    }
+                }, 1000);
+
+                // Step 5: Check frame capture
+                updateStep(5, 'loading');
+                if (ExamSecurity.frameInterval) {
+                    log('✓ Frame capture interval is active', 'success');
+                    updateStep(5, 'success');
+                } else {
+                    log('⚠ Frame capture interval not set', 'error');
+                    updateStep(5, 'error');
+                }
+
+                updateStatus('Proctoring is ACTIVE! Check the camera preview in the bottom-right corner.', 'success');
+                log('=== Test Complete: Proctoring is ACTIVE ===', 'success');
+
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                updateStep(2, 'error');
+                updateStatus(`Failed: ${error.message}`, 'error');
+            }
+        }
+
+        function stopTest() {
+            log('Stopping proctoring...', 'info');
+            if (typeof ExamSecurity !== 'undefined') {
+                ExamSecurity.cleanup();
+                log('✓ Proctoring stopped', 'success');
+                updateStatus('Proctoring stopped', 'info');
+            }
+        }
+
+        // Auto-start on page load
+        log('Page loaded. Click "Start Proctoring Test" to begin.', 'info');
+    </script>
+</body>
+
+</html>
