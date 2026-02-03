@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: examynex-backend
+    env: python
+    buildCommand: pip install -r backend/requirments.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    rootDir: backend
+    envVars:
+      - key: PROCTOR_ENABLED
+        value: "1"
+      - key: SECRET_KEY
+        value: examynex_super_secret_key
