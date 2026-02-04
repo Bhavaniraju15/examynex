@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student Profile & Settings">
+    <title>Profile - ExamyNex</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .profile-card-main {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            text-align: center;
+            animation: cardSlideIn 0.6s ease-out;
+        }
+
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 0 auto var(--spacing-md);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .profile-name {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-email {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .profile-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(67, 233, 123, 0.2);
+            border: 1px solid rgba(67, 233, 123, 0.4);
+            border-radius: var(--radius-full);
+            color: #43e97b;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .nav-item {
+            padding: var(--spacing-md);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .content-section {
+            display: none;
+            animation: cardSlideIn 0.6s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .settings-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .settings-card h2 {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .settings-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: var(--font-size-base);
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .switch.active {
+            background: var(--primary-gradient);
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all var(--transition-base);
+        }
+
+        .switch.active::after {
+            left: 27px;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .stat-box {
+            padding: var(--spacing-lg);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .stat-box .label {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .stat-box .value {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: start;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-lg);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-logo">ExamyNex</div>
+            <div class="dashboard-user">
+                <button class="btn-secondary" onclick="goToDashboard()" style="width: auto; padding: 0.5rem 1.5rem;">
+                    Dashboard
+                </button>
+                <button class="btn-secondary" onclick="handleLogout()" style="width: auto; padding: 0.5rem 1.5rem;">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Alert Message -->
+            <div id="alertMessage" class="hidden"></div>
+
+            <div class="profile-grid">
+                <!-- Sidebar -->
+                <div class="profile-sidebar">
+                    <div class="profile-card-main">
+                        <div class="profile-avatar-large" id="profileAvatar">S</div>
+                        <div class="profile-name" id="profileName">Student Name</div>
+                        <div class="profile-email" id="profileEmail">student@example.com</div>
+                        <div class="profile-badge">Student</div>
+                    </div>
+
+                    <nav class="nav-menu">
+                        <div class="nav-item active" onclick="showSection('overview')">
+                            📊 Overview
+                        </div>
+                        <div class="nav-item" onclick="showSection('settings')">
+                            ⚙️ Settings
+                        </div>
+                        <div class="nav-item" onclick="showSection('activity')">
+                            📝 Activity
+                        </div>
+                        <div class="nav-item" onclick="showSection('security')">
+                            🔒 Security
+                        </div>
+                    </nav>
+                </div>
+
+                <!-- Main Content -->
+                <div>
+                    <!-- Overview Section -->
+                    <div id="overview" class="content-section active">
+                        <div class="settings-card">
+                            <h2>Performance Overview</h2>
+                            <div class="stats-overview">
+                                <div class="stat-box">
+                                    <div class="label">Exams Taken</div>
+                                    <div class="value" id="examsTaken">0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="label">Average Score</div>
+                                    <div class="value" id="averageScore">0%</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="label">Best Score</div>
+                                    <div class="value" id="bestScore">0%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h2>Account Information</h2>
+                            <div class="settings-group">
+                                <label class="settings-label">Email Address</label>
+                                <input type="email" class="settings-input" id="displayEmail" readonly>
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Member Since</label>
+                                <input type="text" class="settings-input" id="memberSince" readonly
+                                    value="January 2026">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Section -->
+                    <div id="settings" class="content-section">
+                        <div class="settings-card">
+                            <h2>Profile Settings</h2>
+                            <div class="settings-group">
+                                <label class="settings-label">Full Name</label>
+                                <input type="text" class="settings-input" id="settingsName" placeholder="Enter your name">
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Email Address</label>
+                                <input type="email" class="settings-input" id="settingsEmail" readonly>
+                            </div>
+                            <button class="btn" onclick="updateProfile()">Save Changes</button>
+                        </div>
+
+                        <div class="settings-card">
+                            <h2>Preferences</h2>
+                            <div class="switch-container">
+                                <span>Email Notifications</span>
+                                <div class="switch active" onclick="toggleSwitch(this)"></div>
+                            </div>
+                            <div class="switch-container">
+                                <span>Exam Reminders</span>
+                                <div class="switch active" onclick="toggleSwitch(this)"></div>
+                            </div>
+                            <div class="switch-container">
+                                <span>Result Notifications</span>
+                                <div class="switch active" onclick="toggleSwitch(this)"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Section -->
+                    <div id="activity" class="content-section">
+                        <div class="settings-card">
+                            <h2>Recent Activity</h2>
+                            <div id="activityList">
+                                <!-- Activity items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Section -->
+                    <div id="security" class="content-section">
+                        <div class="settings-card">
+                            <h2>Change Password</h2>
+                            <div class="settings-group">
+                                <label class="settings-label">Current Password</label>
+                                <input type="password" class="settings-input" id="currentPassword"
+                                    placeholder="Enter current password">
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">New Password</label>
+                                <input type="password" class="settings-input" id="newPassword"
+                                    placeholder="Enter new password">
+                            </div>
+                            <div class="settings-group">
+                                <label class="settings-label">Confirm New Password</label>
+                                <input type="password" class="settings-input" id="confirmPassword"
+                                    placeholder="Confirm new password">
+                            </div>
+                            <button class="btn" onclick="changePassword()">Update Password</button>
+                        </div>
+
+                        <div class="settings-card">
+                            <h2>Account Actions</h2>
+                            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                                These actions are permanent and cannot be undone.
+                            </p>
+                            <button class="btn" style="background: rgba(245, 87, 108, 0.2); border-color: rgba(245, 87, 108, 0.4);"
+                                onclick="deactivateAccount()">
+                                Deactivate Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Show alert
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Get initials
+        function getInitials(name) {
+            if (!name) return 'S';
+            const parts = name.trim().split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        // Load user data
+        async function loadUserData() {
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.USER_ME), {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    const initials = getInitials(userData.email);
+
+                    document.getElementById('profileAvatar').textContent = initials;
+                    document.getElementById('profileName').textContent = userData.email.split('@')[0];
+                    document.getElementById('profileEmail').textContent = userData.email;
+                    document.getElementById('displayEmail').value = userData.email;
+                    document.getElementById('settingsEmail').value = userData.email;
+                    document.getElementById('settingsName').value = userData.email.split('@')[0];
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Show section
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active from nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Add active to clicked nav item
+            event.target.classList.add('active');
+        }
+
+        // Toggle switch
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+        }
+
+        // Update profile
+        function updateProfile() {
+            showAlert('Profile updated successfully!', 'success');
+        }
+
+        // Change password
+        function changePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (!current || !newPass || !confirm) {
+                showAlert('Please fill in all password fields', 'error');
+                return;
+            }
+
+            if (newPass !== confirm) {
+                showAlert('New passwords do not match', 'error');
+                return;
+            }
+
+            if (newPass.length < 8) {
+                showAlert('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            showAlert('Password updated successfully!', 'success');
+
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+
+        // Deactivate account
+        function deactivateAccount() {
+            if (confirm('Are you sure you want to deactivate your account? This action cannot be undone.')) {
+                showAlert('Account deactivation requested', 'info');
+            }
+        }
+
+        // Go to dashboard
+        function goToDashboard() {
+            window.location.href = 'student-dashboard.html';
+        }
+
+        // Handle logout
+        function handleLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            window.location.href = 'login.html';
+        }
+
+        // Load activity (simulated)
+        function loadActivity() {
+            const activities = [
+                { icon: '📝', title: 'Completed Mathematics Final', time: '2 hours ago' },
+                { icon: '✅', title: 'Started Physics Midterm', time: '1 day ago' },
+                { icon: '📊', title: 'Viewed exam results', time: '2 days ago' },
+            ];
+
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon">${activity.icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadUserData();
+            loadActivity();
+
+            // Simulate stats
+            document.getElementById('examsTaken').textContent = '3';
+            document.getElementById('averageScore').textContent = '85%';
+            document.getElementById('bestScore').textContent = '92%';
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student Dashboard - View and take exams">
+    <title>Student Dashboard - ExamyNex</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .exam-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            transition: all var(--transition-base);
+            animation: cardSlideIn 0.6s ease-out;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exam-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform var(--transition-base);
+        }
+
+        .exam-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(102, 126, 234, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .exam-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .exam-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+
+        .exam-description {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .exam-meta {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .exam-meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .exam-meta-icon {
+            font-size: var(--font-size-lg);
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-start {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.5;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .exam-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-logo">ExamyNex</div>
+            <div class="dashboard-user">
+                <div class="user-avatar" id="userAvatar">S</div>
+                <span id="userName">Student</span>
+                <button class="btn-secondary" onclick="window.location.href='student-profile.html'"
+                    style="width: auto; padding: 0.5rem 1.5rem; margin-left: 1rem;">
+                    Profile
+                </button>
+                <button class="btn-secondary" onclick="handleLogout()"
+                    style="width: auto; padding: 0.5rem 1.5rem;">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <h1
+                style="font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                Available Exams
+            </h1>
+            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                Select an exam to begin
+            </p>
+
+            <!-- Alert Message -->
+            <div id="alertMessage" class="hidden"></div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-spinner">
+                <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+            </div>
+
+            <!-- Exam Grid -->
+            <div id="examGrid" class="exam-grid hidden"></div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state hidden">
+                <div class="empty-state-icon">📚</div>
+                <h2 style="margin-bottom: var(--spacing-sm);">No Exams Available</h2>
+                <p>There are currently no exams available. Please check back later.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Show alert message
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Get user initials
+        function getInitials(name) {
+            if (!name) return 'S';
+            const parts = name.trim().split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.USER_ME), {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    const initials = getInitials(userData.name || userData.email);
+
+                    document.getElementById('userName').textContent = userData.name || userData.email.split('@')[0];
+                    document.getElementById('userAvatar').textContent = initials;
+                } else if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Profile load error:', error);
+            }
+        }
+
+        // Load exams
+        async function loadExams() {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.EXAMS), {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const exams = await response.json();
+                    displayExams(exams);
+                } else if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                } else {
+                    showAlert('Failed to load exams. Please try again.', 'error');
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Load exams error:', error);
+                showAlert('Network error. Please check your connection.', 'error');
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
+        }
+
+        // Display exams
+        function displayExams(exams) {
+            const loadingState = document.getElementById('loadingState');
+            const examGrid = document.getElementById('examGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            loadingState.classList.add('hidden');
+
+            if (!exams || exams.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            examGrid.classList.remove('hidden');
+            examGrid.innerHTML = '';
+
+            exams.forEach((exam, index) => {
+                const card = document.createElement('div');
+                card.className = 'exam-card';
+                card.style.animationDelay = `${index * 0.1}s`;
+
+                card.innerHTML = `
+                    <h3 class="exam-title">${escapeHtml(exam.title)}</h3>
+                    <p class="exam-description">${escapeHtml(exam.description)}</p>
+                    <div class="exam-meta">
+                        <div class="exam-meta-item">
+                            <span class="exam-meta-icon">⏱️</span>
+                            <span>${exam.duration_minutes} minutes</span>
+                        </div>
+                        <div class="exam-meta-item">
+                            <span class="exam-meta-icon">📝</span>
+                            <span>ID: ${exam.id}</span>
+                        </div>
+                    </div>
+                    <div class="exam-actions">
+                        <button class="btn-start" onclick="startExam(${exam.id})">
+                            Start Exam
+                        </button>
+                    </div>
+                `;
+
+                examGrid.appendChild(card);
+            });
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Start exam
+        function startExam(examId) {
+            window.location.href = `exam-taking.html?exam_id=${examId}`;
+        }
+
+        // Handle logout
+        function handleLogout() {
+            localStorage.removeItem('token');
+            showAlert('Logging out...', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadUserProfile();
+            loadExams();
+        });
+    </script>
+</body>
+
+</html>

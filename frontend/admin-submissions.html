@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View Submissions - Admin Panel">
+    <title>View Submissions - ExamyNex Admin</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .submissions-table {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            animation: cardSlideIn 0.6s ease-out;
+        }
+
+        .table-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: var(--font-size-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            padding: var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: var(--spacing-md);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tbody tr {
+            transition: all var(--transition-fast);
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+        }
+
+        .score-excellent {
+            background: rgba(67, 233, 123, 0.2);
+            border: 1px solid rgba(67, 233, 123, 0.4);
+            color: #43e97b;
+        }
+
+        .score-good {
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid rgba(79, 172, 254, 0.4);
+            color: #4facfe;
+        }
+
+        .score-average {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            color: #ffc107;
+        }
+
+        .score-poor {
+            background: rgba(245, 87, 108, 0.2);
+            border: 1px solid rgba(245, 87, 108, 0.4);
+            color: #f5576c;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-size: var(--font-size-sm);
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-lg);
+        }
+
+        .page-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .page-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .page-btn.active {
+            background: var(--primary-gradient);
+            border-color: transparent;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .summary-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+            text-transform: uppercase;
+        }
+
+        .summary-card .value {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-logo">ExamyNex Admin</div>
+            <div class="dashboard-user">
+                <button class="btn-secondary" onclick="goBack()" style="width: auto; padding: 0.5rem 1.5rem;">
+                    ← Back
+                </button>
+                <button class="btn-secondary" onclick="handleLogout()" style="width: auto; padding: 0.5rem 1.5rem;">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Alert Message -->
+            <div id="alertMessage" class="hidden"></div>
+
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="summary-card">
+                    <h3>Total Submissions</h3>
+                    <div class="value" id="totalSubmissions">0</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Average Score</h3>
+                    <div class="value" id="averageScore">0%</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Highest Score</h3>
+                    <div class="value" id="highestScore">0%</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Lowest Score</h3>
+                    <div class="value" id="lowestScore">0%</div>
+                </div>
+            </div>
+
+            <!-- Submissions Table -->
+            <div class="submissions-table">
+                <div class="table-header">
+                    <h2>Exam Submissions</h2>
+                    <div class="filter-group">
+                        <select id="examFilter" class="filter-select" onchange="filterByExam()">
+                            <option value="">All Exams</option>
+                        </select>
+                        <select id="sortBy" class="filter-select" onchange="sortSubmissions()">
+                            <option value="date">Sort by Date</option>
+                            <option value="score">Sort by Score</option>
+                            <option value="name">Sort by Name</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Exam</th>
+                            <th>Submitted At</th>
+                            <th>Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody">
+                        <!-- Submissions will be populated here -->
+                    </tbody>
+                </table>
+
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be populated here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        let submissions = [];
+        let exams = [];
+        let users = {};
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // Check admin authentication
+        function checkAdminAuth() {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+
+            if (!token || role !== 'admin') {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Show alert
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Load exams for filter
+        async function loadExams() {
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.EXAMS), {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    exams = await response.json();
+                    populateExamFilter();
+                }
+            } catch (error) {
+                console.error('Error loading exams:', error);
+            }
+        }
+
+        // Populate exam filter
+        function populateExamFilter() {
+            const filter = document.getElementById('examFilter');
+            filter.innerHTML = '<option value="">All Exams</option>';
+            
+            exams.forEach(exam => {
+                const option = document.createElement('option');
+                option.value = exam.id;
+                option.textContent = exam.title;
+                filter.appendChild(option);
+            });
+        }
+
+        // Load submissions (simulated - replace with actual API call)
+        async function loadSubmissions() {
+            // In a real implementation, this would fetch from /admin/submissions or similar
+            // For now, we'll simulate some data
+            submissions = [
+                {
+                    id: 1,
+                    userId: 1,
+                    userName: 'John Doe',
+                    examId: 1,
+                    examName: 'Mathematics Final',
+                    submittedAt: '2026-01-09T10:30:00',
+                    score: 85.5
+                },
+                {
+                    id: 2,
+                    userId: 2,
+                    userName: 'Jane Smith',
+                    examId: 1,
+                    examName: 'Mathematics Final',
+                    submittedAt: '2026-01-09T11:15:00',
+                    score: 92.0
+                },
+                {
+                    id: 3,
+                    userId: 3,
+                    userName: 'Bob Johnson',
+                    examId: 2,
+                    examName: 'Physics Midterm',
+                    submittedAt: '2026-01-09T09:45:00',
+                    score: 78.5
+                }
+            ];
+
+            updateStatistics();
+            renderSubmissions();
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            if (submissions.length === 0) {
+                document.getElementById('totalSubmissions').textContent = '0';
+                document.getElementById('averageScore').textContent = '0%';
+                document.getElementById('highestScore').textContent = '0%';
+                document.getElementById('lowestScore').textContent = '0%';
+                return;
+            }
+
+            const scores = submissions.map(s => s.score);
+            const average = scores.reduce((a, b) => a + b, 0) / scores.length;
+            const highest = Math.max(...scores);
+            const lowest = Math.min(...scores);
+
+            document.getElementById('totalSubmissions').textContent = submissions.length;
+            document.getElementById('averageScore').textContent = average.toFixed(1) + '%';
+            document.getElementById('highestScore').textContent = highest.toFixed(1) + '%';
+            document.getElementById('lowestScore').textContent = lowest.toFixed(1) + '%';
+        }
+
+        // Get score badge class
+        function getScoreBadgeClass(score) {
+            if (score >= 90) return 'score-excellent';
+            if (score >= 75) return 'score-good';
+            if (score >= 60) return 'score-average';
+            return 'score-poor';
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Render submissions
+        function renderSubmissions() {
+            const tbody = document.getElementById('submissionsTableBody');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageSubmissions = submissions.slice(start, end);
+
+            if (pageSubmissions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No submissions found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pageSubmissions.map(submission => `
+                <tr>
+                    <td>${submission.userName}</td>
+                    <td>${submission.examName}</td>
+                    <td>${formatDate(submission.submittedAt)}</td>
+                    <td>
+                        <span class="score-badge ${getScoreBadgeClass(submission.score)}">
+                            ${submission.score.toFixed(1)}%
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="viewDetails(${submission.id})">
+                            View Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            renderPagination();
+        }
+
+        // Render pagination
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(submissions.length / itemsPerPage);
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '<button class="page-btn" onclick="changePage(' + (currentPage - 1) + ')" ' +
+                (currentPage === 1 ? 'disabled' : '') + '>← Prev</button>';
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" 
+                         onclick="changePage(${i})">${i}</button>`;
+            }
+
+            html += '<button class="page-btn" onclick="changePage(' + (currentPage + 1) + ')" ' +
+                (currentPage === totalPages ? 'disabled' : '') + '>Next →</button>';
+
+            pagination.innerHTML = html;
+        }
+
+        // Change page
+        function changePage(page) {
+            const totalPages = Math.ceil(submissions.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+
+            currentPage = page;
+            renderSubmissions();
+        }
+
+        // Filter by exam
+        function filterByExam() {
+            const examId = document.getElementById('examFilter').value;
+            // In real implementation, fetch filtered submissions from API
+            currentPage = 1;
+            renderSubmissions();
+        }
+
+        // Sort submissions
+        function sortSubmissions() {
+            const sortBy = document.getElementById('sortBy').value;
+
+            submissions.sort((a, b) => {
+                if (sortBy === 'date') {
+                    return new Date(b.submittedAt) - new Date(a.submittedAt);
+                } else if (sortBy === 'score') {
+                    return b.score - a.score;
+                } else if (sortBy === 'name') {
+                    return a.userName.localeCompare(b.userName);
+                }
+                return 0;
+            });
+
+            currentPage = 1;
+            renderSubmissions();
+        }
+
+        // View submission details
+        function viewDetails(submissionId) {
+            const submission = submissions.find(s => s.id === submissionId);
+            if (submission) {
+                alert(`Submission Details\n\nStudent: ${submission.userName}\nExam: ${submission.examName}\nScore: ${submission.score}%\nSubmitted: ${formatDate(submission.submittedAt)}\n\nThis would open a detailed view with:\n- Individual answers\n- Question-by-question breakdown\n- Time spent\n- Proctoring violations`);
+            }
+        }
+
+        // Go back
+        function goBack() {
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        // Handle logout
+        function handleLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAdminAuth()) return;
+
+            await loadExams();
+            await loadSubmissions();
+        });
+    </script>
+</body>
+
+</html>

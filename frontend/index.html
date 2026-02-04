@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ExamyNex - Modern Online Examination Platform with AI Proctoring">
+    <title>ExamyNex - Smart Online Examination System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .content-shell {
+            width: min(1200px, calc(100% - 2 * var(--spacing-lg)));
+            margin: 0 auto;
+        }
+
+        .page-shell {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            gap: var(--spacing-xl);
+            padding: var(--spacing-xl) 0;
+        }
+
+        .hero-section {
+            min-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: var(--spacing-xl) 0;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.125rem, 3vw, 1.5rem);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xl);
+            max-width: 600px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+            padding: var(--spacing-xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-section {
+            margin-top: auto;
+            padding: var(--spacing-xl) 0 var(--spacing-2xl, 4rem);
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            text-align: center;
+            transition: all var(--transition-base);
+            animation: cardSlideIn 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-glow);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+
+        .feature-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container page-shell">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="content-shell">
+                <h1 class="hero-title">ExamyNex</h1>
+                <p class="hero-subtitle">
+                    Modern Online Examination Platform with AI-Powered Proctoring and Real-Time Monitoring
+                </p>
+                <div class="cta-buttons">
+                    <a href="login.html" class="btn">
+                        Sign In
+                    </a>
+                    <a href="register.html" class="btn-secondary">
+                        Create Account
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <div class="content-shell">
+                <h2 class="section-title">Why Choose ExamyNex?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🔒</span>
+                        <h3 class="feature-title">Secure & Reliable</h3>
+                        <p class="feature-description">
+                            JWT-based authentication and encrypted data transmission ensure your exams are completely secure.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">🎥</span>
+                        <h3 class="feature-title">AI Proctoring</h3>
+                        <p class="feature-description">
+                            Advanced face detection and behavior monitoring prevent cheating and maintain exam integrity.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">📊</span>
+                        <h3 class="feature-title">Real-Time Analytics</h3>
+                        <p class="feature-description">
+                            Live monitoring dashboard shows active sessions, violations, and detailed analytics.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <h3 class="feature-title">Auto-Save</h3>
+                        <p class="feature-description">
+                            Never lose your progress. Answers are automatically saved as you type.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">📝</span>
+                        <h3 class="feature-title">Multiple Question Types</h3>
+                        <p class="feature-description">
+                            Support for MCQ, text answers, and code questions with instant grading for MCQs.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <span class="feature-icon">🎨</span>
+                        <h3 class="feature-title">Beautiful UI</h3>
+                        <p class="feature-description">
+                            Modern glassmorphism design with smooth animations for an engaging user experience.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="hero-section" style="min-height: 50vh;">
+            <div class="content-shell">
+                <h2 class="hero-title" style="font-size: 2.5rem;">Ready to Get Started?</h2>
+                <p class="hero-subtitle">
+                    Join thousands of students and educators using ExamyNex for their online examinations.
+                </p>
+                <div class="cta-buttons">
+                    <a href="register.html" class="btn">
+                        Sign Up Free
+                    </a>
+                    <a href="login.html" class="btn-secondary">
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
+            <p>&copy; 2026 ExamyNex. Built with ❤️ for better online education.</p>
+        </footer>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Dashboard - Manage exams and view submissions">
+    <title>Admin Dashboard - ExamyNex</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            transition: all var(--transition-base);
+            animation: cardSlideIn 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform var(--transition-base);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(102, 126, 234, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-sm);
+            opacity: 0.9;
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-value {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .nav-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            transition: all var(--transition-base);
+            animation: cardSlideIn 0.6s ease-out;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform var(--transition-base);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-12px);
+            box-shadow: var(--shadow-lg), 0 0 50px rgba(102, 126, 234, 0.4);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .nav-card-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+
+        .nav-card-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .nav-card-description {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .section-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .activity-list {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            animation: cardSlideIn 0.6s ease-out;
+        }
+
+        .activity-item {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all var(--transition-base);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+        }
+
+        .activity-time {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .activity-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+
+            .stats-grid,
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="dashboard-logo">ExamyNex Admin</div>
+            <div class="dashboard-user">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <span id="userName">Admin</span>
+                <button class="btn-secondary" onclick="handleLogout()"
+                    style="width: auto; padding: 0.5rem 1.5rem; margin-left: 1rem;">
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <h1
+                style="font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                Admin Dashboard
+            </h1>
+            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">
+                Manage exams, questions, and view student submissions
+            </p>
+
+            <!-- Alert Message -->
+            <div id="alertMessage" class="hidden"></div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card" style="animation-delay: 0s;">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-label">Total Exams</div>
+                    <div class="stat-value" id="totalExams">0</div>
+                </div>
+                <div class="stat-card" style="animation-delay: 0.1s;">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-label">Total Questions</div>
+                    <div class="stat-value" id="totalQuestions">0</div>
+                </div>
+                <div class="stat-card" style="animation-delay: 0.2s;">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-label">Total Submissions</div>
+                    <div class="stat-value" id="totalSubmissions">0</div>
+                </div>
+            </div>
+
+            <!-- Navigation Cards -->
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="nav-grid">
+                <a href="admin-create-exam.html" class="nav-card" style="animation-delay: 0s;">
+                    <span class="nav-card-icon">➕</span>
+                    <h3 class="nav-card-title">Create Exam</h3>
+                    <p class="nav-card-description">Create a new exam with title, description, and duration</p>
+                </a>
+                <a href="admin-add-question.html" class="nav-card" style="animation-delay: 0.1s;">
+                    <span class="nav-card-icon">❓</span>
+                    <h3 class="nav-card-title">Add Questions</h3>
+                    <p class="nav-card-description">Add MCQ, text, or code questions to existing exams</p>
+                </a>
+                <a href="admin-submissions.html" class="nav-card" style="animation-delay: 0.2s;">
+                    <span class="nav-card-icon">📊</span>
+                    <h3 class="nav-card-title">View Submissions</h3>
+                    <p class="nav-card-description">View and analyze student exam submissions and scores</p>
+                </a>
+                <a href="admin-monitor.html" class="nav-card" style="animation-delay: 0.3s;">
+                    <span class="nav-card-icon">👀</span>
+                    <h3 class="nav-card-title">Live Monitoring</h3>
+                    <p class="nav-card-description">Real-time proctoring oversight and violation tracking</p>
+                </a>
+            </div>
+
+            <!-- Recent Activity -->
+            <h2 class="section-title">Recent Activity</h2>
+            <div class="activity-list" id="activityList">
+                <div class="empty-state">
+                    <p>No recent activity</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Show alert message
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Get user initials
+        function getInitials(name) {
+            if (!name) return 'A';
+            const parts = name.trim().split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        // Check admin authentication
+        function checkAdminAuth() {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+
+            if (!token || role !== 'admin') {
+                showAlert('Access denied. Admin privileges required.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return false;
+            }
+            return true;
+        }
+
+        // Load user profile
+        async function loadUserProfile() {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.USER_ME), {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    const initials = getInitials(userData.name || userData.email);
+
+                    document.getElementById('userName').textContent = userData.name || userData.email.split('@')[0];
+                    document.getElementById('userAvatar').textContent = initials;
+                } else if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Profile load error:', error);
+            }
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            const token = localStorage.getItem('token');
+
+            try {
+                // Fetch exams
+                const examsResponse = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.EXAMS), {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (examsResponse.ok) {
+                    const exams = await examsResponse.json();
+                    document.getElementById('totalExams').textContent = exams.length;
+
+                    // Count total questions
+                    let totalQuestions = 0;
+                    for (const exam of exams) {
+                        const questionsResponse = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.EXAM_QUESTIONS(exam.id)), {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (questionsResponse.ok) {
+                            const questions = await questionsResponse.json();
+                            totalQuestions += questions.length;
+                        }
+                    }
+                    document.getElementById('totalQuestions').textContent = totalQuestions;
+                }
+
+                // Note: Submissions count will be 0 until we add the backend endpoint
+                document.getElementById('totalSubmissions').textContent = '0';
+
+            } catch (error) {
+                console.error('Statistics load error:', error);
+            }
+        }
+
+        // Handle logout
+        function handleLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            showAlert('Logging out...', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!checkAdminAuth()) return;
+
+            loadUserProfile();
+            loadStatistics();
+        });
+    </script>
+</body>
+
+</html>

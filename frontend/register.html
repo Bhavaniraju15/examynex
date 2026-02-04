@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your account - Join ExamyNex today">
+    <title>Register - ExamyNex</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join us and start your journey</p>
+
+            <!-- Alert Message -->
+            <div id="alertMessage" class="hidden"></div>
+
+            <!-- Register Form -->
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group-float">
+                    <input type="text" id="name" class="form-input" placeholder=" " required autocomplete="name"
+                        minlength="2">
+                    <label for="name" class="form-label">Full Name</label>
+                </div>
+
+                <div class="form-group-float">
+                    <input type="email" id="email" class="form-input" placeholder=" " required autocomplete="email">
+                    <label for="email" class="form-label">Email Address</label>
+                </div>
+
+                <div class="form-group-float">
+                    <input type="password" id="password" class="form-input" placeholder=" " required
+                        autocomplete="new-password" minlength="8" oninput="checkPasswordStrength()">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-strength">
+                        <div id="strengthBar" class="password-strength-bar"></div>
+                    </div>
+                </div>
+
+                <div class="form-group-float">
+                    <input type="password" id="confirmPassword" class="form-input" placeholder=" " required
+                        autocomplete="new-password" minlength="8">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                </div>
+
+                <button type="submit" class="btn" id="registerBtn">
+                    <span id="btnText">Create Account</span>
+                    <span id="btnSpinner" class="spinner hidden"></span>
+                </button>
+            </form>
+
+            <div class="auth-link">
+                Already have an account? <a href="login.html">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+
+        // Show alert message
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Set loading state
+        function setLoading(isLoading) {
+            const btn = document.getElementById('registerBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+
+            if (isLoading) {
+                btn.disabled = true;
+                btnText.classList.add('hidden');
+                btnSpinner.classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        // Check password strength
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthBar = document.getElementById('strengthBar');
+
+            if (!password) {
+                strengthBar.className = 'password-strength-bar';
+                return;
+            }
+
+            let strength = 0;
+
+            // Length check
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+
+            // Character variety checks
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            // Set strength class
+            if (strength <= 2) {
+                strengthBar.className = 'password-strength-bar strength-weak';
+            } else if (strength <= 4) {
+                strengthBar.className = 'password-strength-bar strength-medium';
+            } else {
+                strengthBar.className = 'password-strength-bar strength-strong';
+            }
+        }
+
+        // Validate form
+        function validateForm(name, email, password, confirmPassword) {
+            if (name.length < 2) {
+                showAlert('Name must be at least 2 characters long', 'error');
+                return false;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('Please enter a valid email address', 'error');
+                return false;
+            }
+
+            if (password.length < 8) {
+                showAlert('Password must be at least 8 characters long', 'error');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Handle register form submission
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate form
+            if (!validateForm(name, email, password, confirmPassword)) {
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.REGISTER), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success message
+                    showAlert('Registration successful! Redirecting to login...', 'success');
+
+                    // Redirect to login after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    // Show error message from server
+                    showAlert(data.detail || 'Registration failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showAlert('Network error. Please check your connection and try again.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        // Real-time password match validation
+        document.getElementById('confirmPassword').addEventListener('input', () => {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const confirmInput = document.getElementById('confirmPassword');
+
+            if (confirmPassword && password !== confirmPassword) {
+                confirmInput.style.borderColor = 'rgba(245, 87, 108, 0.6)';
+            } else {
+                confirmInput.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            }
+        });
+    </script>
+</body>
+
+</html>

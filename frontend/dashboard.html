@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard - Manage your account">
+    <title>Dashboard - ExamyNex</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card" style="text-align: center;">
+            <h1 class="auth-title">Loading...</h1>
+            <p class="auth-subtitle">Redirecting to your dashboard</p>
+            
+            <!-- Alert Message -->
+            <div id="alertMessage" class="hidden"></div>
+            
+            <!-- Loading Spinner -->
+            <div class="spinner" style="margin: 2rem auto; display: block;"></div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="auth-utils.js"></script>
+    <script>
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.getElementById('alertMessage');
+            if (alertDiv) {
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.textContent = message;
+                alertDiv.classList.remove('hidden');
+
+                setTimeout(() => {
+                    alertDiv.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        // Check authentication and redirect based on role
+        async function checkAuthAndRedirect() {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Show loading message
+            showAlert('Redirecting to your dashboard...', 'info');
+
+            try {
+                // Use token refresh utility for this request
+                const response = await AuthUtils.fetchWithTokenRefresh(
+                    getApiUrl(API_CONFIG.ENDPOINTS.USER_ME),
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    }
+                );
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    
+                    // Store role if not already stored
+                    if (!role) {
+                        localStorage.setItem('role', userData.role);
+                    }
+
+                    // Initialize token refresh
+                    AuthUtils.initTokenRefresh();
+
+                    // Redirect based on role
+                    if (userData.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'student-dashboard.html';
+                    }
+                } else {
+                    // Token invalid, logout
+                    AuthUtils.logout('Session invalid. Please login again.');
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                showAlert('Network error. Redirecting to login...', 'error');
+                setTimeout(() => {
+                    AuthUtils.logout();
+                }, 2000);
+            }
+        }
+
+        // Run on page load
+        window.addEventListener('DOMContentLoaded', checkAuthAndRedirect);
+    </script>
+
+                    // Update stats
+                    if (userData.created_at) {
+                        document.getElementById('memberSince').textContent = formatDate(userData.created_at);
+                    }
+
+                    if (userData.status) {
+                        document.getElementById('accountStatus').textContent = userData.status;
+                    }
+
+                    // Set last login to current time
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    document.getElementById('lastLogin').textContent = timeString;
+
+                } else if (response.status === 401) {
+                    // Token is invalid or expired
+                    showAlert('Session expired. Please login again.', 'error');
+                    setTimeout(() => {
+                        localStorage.removeItem('token');
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showAlert('Failed to load profile. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Profile load error:', error);
+                showAlert('Network error. Please check your connection.', 'error');
+            }
+        }
+Use auth utility to logout
+            AuthUtils.logout('Logging out...'rect to login
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        }
+
+        // Check authentication on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load user profile
+            loadUserProfile();
+        });
+
+        // Add animation to stat cards
+        document.addEventListener('DOMContentLoaded', () => {
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+
+</html>

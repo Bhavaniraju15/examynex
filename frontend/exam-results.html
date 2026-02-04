@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Exam Results - ExamyNex">
+    <title>Exam Results - ExamyNex</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .results-container {
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            padding: var(--spacing-xl);
+        }
+
+        .results-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            animation: cardSlideIn 0.6s ease-out;
+        }
+
+        .results-title {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .results-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+        }
+
+        .score-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            text-align: center;
+            animation: cardSlideIn 0.8s ease-out;
+        }
+
+        .score-label {
+            font-size: var(--font-size-base);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-md);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .score-value {
+            font-size: 5rem;
+            font-weight: 700;
+            background: var(--success-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-sm);
+            animation: scoreReveal 1s ease-out;
+        }
+
+        @keyframes scoreReveal {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .score-message {
+            font-size: var(--font-size-lg);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            text-align: center;
+            transition: all var(--transition-base);
+            animation: cardSlideIn 0.6s ease-out;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .actions-section {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            animation: cardSlideIn 1s ease-out;
+        }
+
+        .btn-action {
+            padding: var(--spacing-md) var(--spacing-xl);
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: var(--spacing-md);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .score-value {
+                font-size: 3.5rem;
+            }
+
+            .actions-section {
+                flex-direction: column;
+            }
+
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="results-container">
+        <div class="results-content">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading your results...</div>
+            </div>
+
+            <!-- Results Content -->
+            <div id="resultsContent" class="hidden">
+                <div class="results-header">
+                    <h1 class="results-title">Exam Completed!</h1>
+                    <p class="results-subtitle" id="examTitle">Your exam has been submitted successfully</p>
+                </div>
+
+                <!-- Score Card -->
+                <div class="score-card">
+                    <div class="score-label">Your Score</div>
+                    <div class="score-value" id="scoreValue">0%</div>
+                    <div class="score-message" id="scoreMessage">Great job!</div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card" style="animation-delay: 0.2s;">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-label">Score</div>
+                        <div class="stat-value" id="statScore">0%</div>
+                    </div>
+
+                    <div class="stat-card" style="animation-delay: 0.3s;">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-label">Submitted</div>
+                        <div class="stat-value" id="statDate">-</div>
+                    </div>
+
+                    <div class="stat-card" style="animation-delay: 0.4s;">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-label">Exam ID</div>
+                        <div class="stat-value" id="statExamId">-</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions-section">
+                    <a href="student-dashboard.html" class="btn-action btn-primary">
+                        <span>← Back to Dashboard</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="hidden">
+                <div class="score-card">
+                    <div class="stat-icon" style="font-size: 4rem; margin-bottom: var(--spacing-md);">⚠️</div>
+                    <h2 style="margin-bottom: var(--spacing-sm);">Unable to Load Results</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);" id="errorMessage">
+                        There was an error loading your exam results.
+                    </p>
+                    <a href="student-dashboard.html" class="btn-action btn-primary">
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Get submission ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const submissionId = urlParams.get('submission_id');
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            const options = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Get score message
+        function getScoreMessage(score) {
+            if (score >= 90) return 'Outstanding! 🎉';
+            if (score >= 80) return 'Excellent Work! 🌟';
+            if (score >= 70) return 'Great Job! 👏';
+            if (score >= 60) return 'Good Effort! 👍';
+            if (score >= 50) return 'Keep Practicing! 💪';
+            return 'Don\'t Give Up! 📚';
+        }
+
+        // Load submission results
+        async function loadResults() {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!submissionId) {
+                showError('No submission ID provided');
+                return;
+            }
+
+            try {
+                // Note: You may need to create a GET endpoint for fetching submission by ID
+                // For now, we'll simulate the results display
+                // In a real implementation, you'd call: GET /submissions/{submission_id}
+
+                // Simulated delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // For demonstration, we'll use mock data
+                // Replace this with actual API call when endpoint is available
+                const mockResult = {
+                    id: submissionId,
+                    exam_id: 1,
+                    user_id: 1,
+                    score: 85.5,
+                    submitted_at: new Date().toISOString(),
+                    exam: {
+                        title: 'Sample Exam'
+                    }
+                };
+
+                displayResults(mockResult);
+
+            } catch (error) {
+                console.error('Load results error:', error);
+                showError('Network error while loading results');
+            }
+        }
+
+        // Display results
+        function displayResults(result) {
+            const score = Math.round(result.score * 10) / 10;
+
+            // Update score display
+            document.getElementById('scoreValue').textContent = `${score}%`;
+            document.getElementById('scoreMessage').textContent = getScoreMessage(score);
+            document.getElementById('statScore').textContent = `${score}%`;
+
+            // Update exam info
+            if (result.exam && result.exam.title) {
+                document.getElementById('examTitle').textContent = result.exam.title;
+            }
+
+            // Update stats
+            document.getElementById('statDate').textContent = formatDate(result.submitted_at);
+            document.getElementById('statExamId').textContent = result.exam_id;
+
+            // Show results
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('resultsContent').classList.remove('hidden');
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadResults();
+        });
+    </script>
+</body>
+
+</html>
